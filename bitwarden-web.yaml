@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: web-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---      
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bw-web
+spec:
+  replicas: 1   
+  selector:
+    matchLabels:
+      app: bw-web
+  template:
+    metadata:
+      labels:
+        app: bw-web
+    spec:
+
+      containers:
+      - name: bw-web
+        image: bitwarden/web
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5000
+        env:
+        - name: globalSettings__internalIdentityKey
+          valueFrom:
+            secretKeyRef:
+              name: web
+              key: globalSettings__internalIdentityKey
+        volumeMounts:
+        - name: web
+          mountPath: /etc/bitwarden/web
+      volumes:
+      - name: web
+        persistentVolumeClaim:
+          claimName: web-data
