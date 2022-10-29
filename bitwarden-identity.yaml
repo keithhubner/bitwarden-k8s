@@ -1,0 +1,84 @@
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: identity-data
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 10Gi
+# ---
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: identity-core
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 10Gi
+# ---      
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: identity-certs
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 10Gi            
+# ---      
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bw-identity
+  namespace: bitwarden
+spec:
+  strategy: 
+    type: Recreate
+  replicas: 1  
+  selector:
+    matchLabels:
+      app: bw-identity
+  template:
+    metadata:
+      labels:
+        app: bw-identity
+    spec:
+      nodeSelector:
+        disktype: shared    
+      containers:
+      - name: bw-identity
+        image: bitwarden/identity
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5000
+        env:
+        - name: globalSettings__internalIdentityKey
+          valueFrom:
+            secretKeyRef:
+              name: identity
+              key: globalSettings__internalIdentityKey
+        volumeMounts:
+        - name: identity
+          mountPath: /etc/bitwarden/identity
+        - name: core
+          mountPath: /etc/bitwarden/core
+        - name: certs
+          mountPath: /etc/bitwarden/ca-certificates                   
+      volumes:
+      - name: identity
+        persistentVolumeClaim:
+          claimName: bitwarden-data
+      - name: core
+        persistentVolumeClaim:
+          claimName: bitwarden-data  
+      - name: certs
+        persistentVolumeClaim:
+          claimName: bitwarden-certs                  

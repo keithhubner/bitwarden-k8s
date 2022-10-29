@@ -1,52 +1,43 @@
 # apiVersion: v1
 # kind: PersistentVolumeClaim
 # metadata:
-#   name: web-data
+#   name: attachments-data
 # spec:
 #   accessModes:
 #     - ReadWriteOnce
 #   resources:
 #     requests:
 #       storage: 10Gi
-# ---      
+# ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bw-web
+  name: bw-attachments
   namespace: bitwarden
 spec:
-  strategy: 
-    type: Recreate
-  replicas: 1  
   selector:
     matchLabels:
-      app: bw-web
+      app: bw-attachments
   template:
     metadata:
       labels:
-        app: bw-web
+        app: bw-attachments
     spec:
       nodeSelector:
         disktype: shared    
       containers:
-      - name: bw-web
-        image: bitwarden/web
+      - name: bw-attachments
+        image: bitwarden/attachments
         resources:
           limits:
             memory: "128Mi"
             cpu: "500m"
         ports:
         - containerPort: 5000
-        env:
-        - name: globalSettings__internalIdentityKey
-          valueFrom:
-            secretKeyRef:
-              name: web
-              key: globalSettings__internalIdentityKey
         volumeMounts:
-        - name: web
-          mountPath: /etc/bitwarden/web
+        - name: attachments
+          mountPath: /etc/bitwarden/core/attachments
       volumes:
-      - name: web
+      - name: attachments
         persistentVolumeClaim:
-          claimName: bitwarden-app-data
+          claimName: bitwarden-data
