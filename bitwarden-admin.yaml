@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bw-identity
+  name: bw-admin
   namespace: bitwarden
 spec:
   strategy: 
@@ -9,15 +9,15 @@ spec:
   replicas: 1  
   selector:
     matchLabels:
-      app: bw-identity
+      app: bw-admin
   template:
     metadata:
       labels:
-        app: bw-identity
+        app: bw-admin
     spec: 
       containers:
-      - name: bw-identity
-        image: bitwarden/identity
+      - name: bw-admin
+        image: bitwarden/admin
         resources:
           limits:
             memory: "128Mi"
@@ -25,14 +25,12 @@ spec:
         ports:
         - containerPort: 5000
         env:
-        - name: globalSettings__internalIdentityKey
+        - name: globalSettings__internalidentityKey
           valueFrom:
             secretKeyRef:
               name: web
               key: globalSettings__internalIdentityKey
         volumeMounts:
-        - name: identity
-          mountPath: /etc/bitwarden/identity
         - name: core
           mountPath: /etc/bitwarden/core
         - name: certs
@@ -40,10 +38,6 @@ spec:
         - name: logs
           mountPath: /etc/bitwarden/logs                          
       volumes:
-      - name: identity
-        nfs:
-          server: 10.43.235.63
-          path: /identity
       - name: core
         nfs:
           server: 10.43.235.63
@@ -55,4 +49,4 @@ spec:
       - name: logs
         nfs:
           server: 10.43.235.63
-          path: /logs/identity         
+          path: /logs/admin         

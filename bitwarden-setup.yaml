@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bw-web
+  name: bw-setup
   namespace: bitwarden
 spec:
   strategy: 
@@ -9,15 +9,15 @@ spec:
   replicas: 1  
   selector:
     matchLabels:
-      app: bw-web
+      app: bw-setup
   template:
     metadata:
       labels:
-        app: bw-web
+        app: bw-setup
     spec: 
       containers:
-      - name: bw-web
-        image: bitwarden/web
+      - name: bw-setup
+        image: bitwarden/setup
         resources:
           limits:
             memory: "128Mi"
@@ -31,12 +31,12 @@ spec:
               name: web
               key: globalSettings__internalIdentityKey
         volumeMounts:
-        - name: web
-          mountPath: /etc/bitwarden/web
+        - name: setup
+          mountPath: /
       volumes:
-      - name: web
+      - name: setup
         nfs:
           server: 10.43.235.63
-          path: /web
+          path: /bitwarden
         # persistentVolumeClaim:
           # claimName: bitwarden-app-data

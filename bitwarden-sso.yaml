@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bw-identity
+  name: bw-sso
   namespace: bitwarden
 spec:
   strategy: 
@@ -9,15 +9,15 @@ spec:
   replicas: 1  
   selector:
     matchLabels:
-      app: bw-identity
+      app: bw-sso
   template:
     metadata:
       labels:
-        app: bw-identity
+        app: bw-sso
     spec: 
       containers:
-      - name: bw-identity
-        image: bitwarden/identity
+      - name: bw-sso
+        image: bitwarden/sso
         resources:
           limits:
             memory: "128Mi"
@@ -25,13 +25,13 @@ spec:
         ports:
         - containerPort: 5000
         env:
-        - name: globalSettings__internalIdentityKey
+        - name: globalSettings__internalidentityKey
           valueFrom:
             secretKeyRef:
               name: web
               key: globalSettings__internalIdentityKey
         volumeMounts:
-        - name: identity
+        - name: sso
           mountPath: /etc/bitwarden/identity
         - name: core
           mountPath: /etc/bitwarden/core
@@ -40,7 +40,7 @@ spec:
         - name: logs
           mountPath: /etc/bitwarden/logs                          
       volumes:
-      - name: identity
+      - name: sso
         nfs:
           server: 10.43.235.63
           path: /identity
@@ -55,4 +55,4 @@ spec:
       - name: logs
         nfs:
           server: 10.43.235.63
-          path: /logs/identity         
+          path: /logs/sso         

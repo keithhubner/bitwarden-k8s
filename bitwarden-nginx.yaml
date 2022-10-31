@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: bw-identity
+  name: bw-nginx
   namespace: bitwarden
 spec:
   strategy: 
@@ -9,15 +9,15 @@ spec:
   replicas: 1  
   selector:
     matchLabels:
-      app: bw-identity
+      app: bw-nginx
   template:
     metadata:
       labels:
-        app: bw-identity
+        app: bw-nginx
     spec: 
       containers:
-      - name: bw-identity
-        image: bitwarden/identity
+      - name: bw-nginx
+        image: bitwarden/nginx
         resources:
           limits:
             memory: "128Mi"
@@ -25,34 +25,34 @@ spec:
         ports:
         - containerPort: 5000
         env:
-        - name: globalSettings__internalIdentityKey
+        - name: globalSettings__internalidentityKey
           valueFrom:
             secretKeyRef:
               name: web
               key: globalSettings__internalIdentityKey
         volumeMounts:
-        - name: identity
-          mountPath: /etc/bitwarden/identity
-        - name: core
-          mountPath: /etc/bitwarden/core
-        - name: certs
-          mountPath: /etc/bitwarden/ca-certificates     
+        - name: nginx
+          mountPath: /etc/bitwarden/nginx
+        - name: letsencrypt
+          mountPath: /etc/letsencrypt 
+        - name: ssl
+          mountPath: /etc/ssl                     
         - name: logs
-          mountPath: /etc/bitwarden/logs                          
+          mountPath: /var/log/nginx                          
       volumes:
-      - name: identity
+      - name: nginx
         nfs:
           server: 10.43.235.63
-          path: /identity
-      - name: core
+          path: /nginx    
+      - name: letsencrypt
         nfs:
           server: 10.43.235.63
-          path: /core
-      - name: certs
+          path: /letsencrypt
+      - name: ssl
         nfs:
           server: 10.43.235.63
-          path: /ca-certificates                    
+          path: /ssl                                   
       - name: logs
         nfs:
           server: 10.43.235.63
-          path: /logs/identity         
+          path: /logs/nginx         
