@@ -18,14 +18,30 @@ spec:
         resources:
           limits:
             memory: "128Mi"
-            cpu: "500m"
+            cpu: "100m"
         ports:
         - containerPort: 5000
+        envFrom:
+         - configMapRef:
+            name: bw-config      
         volumeMounts:
         - name: attachments
           mountPath: /etc/bitwarden/core/attachments
       volumes:
       - name: attachments
         nfs:
-          server: 10.43.235.63
-          path: /core/attachments
+          server: 10.43.42.45
+          path: /bwdata/core/attachments
+---          
+apiVersion: v1
+kind: Service
+metadata:
+  name: attachments
+  namespace: bitwarden
+spec:
+  selector:
+    app: bw-attachments
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000              

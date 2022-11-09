@@ -21,15 +21,15 @@ spec:
         resources:
           limits:
             memory: "128Mi"
-            cpu: "500m"
+            cpu: "200m"
         ports:
         - containerPort: 5000
-        env:
-        - name: globalSettings__internalIdentityKey
-          valueFrom:
-            secretKeyRef:
-              name: web
-              key: globalSettings__internalIdentityKey
+
+        envFrom:
+         - configMapRef:
+            name: bw-config     
+ 
+        # command: ['sh','-c', 'sleep 1d']
         volumeMounts:
         - name: identity
           mountPath: /etc/bitwarden/identity
@@ -42,17 +42,30 @@ spec:
       volumes:
       - name: identity
         nfs:
-          server: 10.43.235.63
-          path: /identity
+          server: 10.43.42.45
+          path: /bwdata/identity
       - name: core
         nfs:
-          server: 10.43.235.63
-          path: /core
+          server: 10.43.42.45
+          path: /bwdata/core
       - name: certs
         nfs:
-          server: 10.43.235.63
-          path: /ca-certificates                    
+          server: 10.43.42.45
+          path: /bwdata/ca-certificates                    
       - name: logs
         nfs:
-          server: 10.43.235.63
-          path: /logs/identity         
+          server: 10.43.42.45
+          path: /bwdata/logs/identity         
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity
+  namespace: bitwarden
+spec:
+  selector:
+    app: bw-identity
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000            

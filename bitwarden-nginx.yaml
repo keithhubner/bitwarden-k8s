@@ -21,38 +21,58 @@ spec:
         resources:
           limits:
             memory: "128Mi"
-            cpu: "500m"
+            cpu: "200m"
         ports:
-        - containerPort: 5000
-        env:
-        - name: globalSettings__internalidentityKey
-          valueFrom:
-            secretKeyRef:
-              name: web
-              key: globalSettings__internalIdentityKey
+        - containerPort: 8080
+        - containerPort: 8443
+        envFrom:
+         - configMapRef:
+            name: bw-config 
         volumeMounts:
         - name: nginx
           mountPath: /etc/bitwarden/nginx
-        - name: letsencrypt
-          mountPath: /etc/letsencrypt 
+        - name: keys
+          mountPath: /etc/letsencrypt
+          readOnly: true 
         - name: ssl
           mountPath: /etc/ssl                     
         - name: logs
           mountPath: /var/log/nginx                          
       volumes:
+      - name: keys
+        secret: 
+          secretName: letsencrypt-prod-bw
       - name: nginx
         nfs:
-          server: 10.43.235.63
-          path: /nginx    
+          server: 10.43.42.45
+          path: /bwdata/nginx    
       - name: letsencrypt
         nfs:
-          server: 10.43.235.63
-          path: /letsencrypt
+          server: 10.43.42.45
+          path: /bwdata/letsencrypt
       - name: ssl
         nfs:
-          server: 10.43.235.63
-          path: /ssl                                   
+          server: 10.43.42.45
+          path: /bwdata/ssl                                   
       - name: logs
         nfs:
-          server: 10.43.235.63
-          path: /logs/nginx         
+          server: 10.43.42.45
+          path: /bwdata/logs/nginx 
+---                  
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: bitwarden
+spec:
+  selector:
+    app: bw-nginx
+  ports:
+    - protocol: TCP
+      name: "secure"
+      port: 8443
+      targetPort: 8443
+    - protocol: TCP
+      name: "insecure"
+      port: 8080
+      targetPort: 8080

@@ -21,15 +21,12 @@ spec:
         resources:
           limits:
             memory: "128Mi"
-            cpu: "500m"
+            cpu: "100m"
         ports:
         - containerPort: 5000
-        env:
-        - name: globalSettings__internalidentityKey
-          valueFrom:
-            secretKeyRef:
-              name: web
-              key: globalSettings__internalIdentityKey
+        envFrom:
+         - configMapRef:
+            name: bw-config 
         volumeMounts:
         - name: certs
           mountPath: /etc/bitwarden/ca-certificates     
@@ -38,9 +35,22 @@ spec:
       volumes:
       - name: certs
         nfs:
-          server: 10.43.235.63
-          path: /ca-certificates                    
+          server: 10.43.42.45
+          path: /bwdata/ca-certificates                    
       - name: logs
         nfs:
-          server: 10.43.235.63
-          path: /logs/notifications         
+          server: 10.43.42.45
+          path: /bwdata/logs/notifications     
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notifications
+  namespace: bitwarden
+spec:
+  selector:
+    app: bw-notifications
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000                

@@ -6,7 +6,7 @@ metadata:
 spec:
   strategy: 
     type: Recreate
-  replicas: 1  
+  replicas: 1 
   selector:
     matchLabels:
       app: bw-web
@@ -21,22 +21,30 @@ spec:
         resources:
           limits:
             memory: "128Mi"
-            cpu: "500m"
+            cpu: "100m"
         ports:
         - containerPort: 5000
-        env:
-        - name: globalSettings__internalIdentityKey
-          valueFrom:
-            secretKeyRef:
-              name: web
-              key: globalSettings__internalIdentityKey
+        envFrom:
+         - configMapRef:
+            name: bw-config                 
         volumeMounts:
         - name: web
           mountPath: /etc/bitwarden/web
       volumes:
       - name: web
         nfs:
-          server: 10.43.235.63
-          path: /web
-        # persistentVolumeClaim:
-          # claimName: bitwarden-app-data
+          server: 10.43.42.45
+          path: /bwdata/web
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: bitwarden
+spec:
+  selector:
+    app: bw-web
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000          

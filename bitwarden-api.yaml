@@ -21,6 +21,9 @@ spec:
             cpu: "500m"
         ports:
         - containerPort: 5000
+        envFrom:
+         - configMapRef:
+            name: bw-config       
         volumeMounts:
         - name: api
           mountPath: /etc/bitwarden/core 
@@ -31,13 +34,26 @@ spec:
       volumes:
       - name: api
         nfs:
-          server: 10.43.235.63
-          path: /core
+          server: 10.43.42.45
+          path: /bwdata/core
       - name: certs
         nfs:
-          server: 10.43.235.63
-          path: /ca-certificates     
+          server: 10.43.42.45
+          path: /bwdata/ca-certificates     
       - name: logs
         nfs:
-          server: 10.43.235.63
-          path: /logs/api
+          server: 10.43.42.45
+          path: /bwdata/logs/api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api
+  namespace: bitwarden
+spec:
+  selector:
+    app: bw-api
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000          

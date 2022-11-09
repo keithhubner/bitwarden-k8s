@@ -34,23 +34,16 @@ spec:
         image: bitwarden/mssql
         resources:
           requests:
-            memory: "2G"
-            cpu: "2000m"
+            memory: "1G"
+            cpu: "500m"
           limits:
             memory: "2G"
-            cpu: "2000m"
+            cpu: "1000m"
         ports:
         - containerPort: 1433
-        env:
-        - name: MSSQL_PID
-          value: "Express"
-        - name: ACCEPT_EULA
-          value: "Y"
-        - name: MSSQL_SA_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: mssql
-              key: MSSQL_SA_PASSWORD
+        envFrom:
+         - configMapRef:
+            name: bw-config 
         volumeMounts:
         - name: mssqldb
           mountPath: /var/opt/mssql
@@ -62,7 +55,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mssql-deployment
+  name: mssql
   namespace: bitwarden
 spec:
   selector:

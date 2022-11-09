@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod-bw
+    ingress.kubernetes.io/ssl-redirect: "true"  
+  name: myingress
+  namespace: bitwarden
+  labels:
+    name: myingress
+spec:
+  tls:
+    - hosts:
+      - bitwarden.keithhubner.com
+      secretName: letsencrypt-prod-bw
+  rules:
+  - host: bitwarden.keithhubner.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: nginx-service
+            port: 
+              number: 8080
+          
+         

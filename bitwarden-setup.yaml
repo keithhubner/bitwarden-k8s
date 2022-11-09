@@ -21,22 +21,15 @@ spec:
         resources:
           limits:
             memory: "128Mi"
-            cpu: "500m"
+            cpu: "100m"
         ports:
         - containerPort: 5000
-        env:
-        - name: globalSettings__internalIdentityKey
-          valueFrom:
-            secretKeyRef:
-              name: web
-              key: globalSettings__internalIdentityKey
+        command: ['sh','-c', 'sleep 1d']
         volumeMounts:
         - name: setup
-          mountPath: /
+          mountPath: /bitwarden
       volumes:
       - name: setup
         nfs:
-          server: 10.43.235.63
-          path: /bitwarden
-        # persistentVolumeClaim:
-          # claimName: bitwarden-app-data
+          server: "10.43.42.45"
+          path: /bwdata          
